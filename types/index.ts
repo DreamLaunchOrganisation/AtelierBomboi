@@ -85,7 +85,11 @@ export interface PriceBreakdown {
 export interface GalleryItem {
   id: number
   title: string
+  /** Cartouche posé sur la photo : la matière dominante. */
   subtitle: string
   desc: string
-  gradientClass: string
+  /** Chemin depuis public/ — par exemple /realisations/dressing.jpg */
+  image: string
+  /** Description de la photo pour les lecteurs d'écran et si elle ne charge pas. */
+  alt: string
 }

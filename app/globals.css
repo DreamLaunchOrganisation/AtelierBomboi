@@ -52,14 +52,6 @@
     animation: bounce-slow 2s ease-in-out infinite;
   }
 
-  /* Dégradés de la galerie (placeholders en attendant les vraies photos) */
-  .gallery-img-1 { background: linear-gradient(135deg, #5C3D1E, #8B5E3C); }
-  .gallery-img-2 { background: linear-gradient(135deg, #E8E2D8, #C4935A); }
-  .gallery-img-3 { background: linear-gradient(135deg, #3A3835, #6B6357); }
-  .gallery-img-4 { background: linear-gradient(135deg, #7A5C3E, #C4935A); }
-  .gallery-img-5 { background: linear-gradient(135deg, #2E2A24, #5C3D1E); }
-  .gallery-img-6 { background: linear-gradient(135deg, #4A3520, #A87A45); }
-
   /* ---------------------------------------------------------------------
      Révélations au défilement.
 

@@ -1,9 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { GALLERY_ITEMS } from '@/lib/constants'
 import { revealed } from '@/lib/reveal'
-import { ILLUSTRATIONS } from './Illustrations'
 
 /** Écart entre deux cartes, en pixels — doit suivre la classe `gap-6` du rail. */
 const GAP = 24
@@ -104,10 +104,16 @@ export default function Gallery() {
             </h2>
           </div>
 
-          <div {...revealed(2, 'right')} className="hidden md:flex gap-3 shrink-0">
-            <Arrow direction="prev" disabled={atStart} onClick={() => goToPage(page - 1)} />
-            <Arrow direction="next" disabled={atEnd} onClick={() => goToPage(page + 1)} />
-          </div>
+          {/* Tant que les réalisations tiennent sur une seule page, les
+              commandes n'auraient rien à faire défiler : on les retire plutôt
+              que de les afficher grisées. Elles reviennent d'elles-mêmes à la
+              quatrième photo. */}
+          {pageCount > 1 && (
+            <div {...revealed(2, 'right')} className="hidden md:flex gap-3 shrink-0">
+              <Arrow direction="prev" disabled={atStart} onClick={() => goToPage(page - 1)} />
+              <Arrow direction="next" disabled={atEnd} onClick={() => goToPage(page + 1)} />
+            </div>
+          )}
         </div>
 
         <div
@@ -117,65 +123,71 @@ export default function Gallery() {
           tabIndex={0}
           className="no-scrollbar flex gap-6 overflow-x-auto snap-x snap-mandatory focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
         >
-          {GALLERY_ITEMS.map((item, i) => {
-            const Illustration = ILLUSTRATIONS[item.id]
-            return (
-              <article
-                key={item.id}
-                {...revealed(2 + (i % 3), 'zoom')}
-                aria-roledescription="diapositive"
-                aria-label={`${i + 1} sur ${GALLERY_ITEMS.length} — ${item.title}`}
-                // Mobile : une image par écran. Grand écran : trois de front.
-                // Les `_` deviennent des espaces : `calc()` refuse un `-` collé.
-                className="group cursor-pointer snap-start shrink-0 w-full md:w-[calc((100%_-_3rem)/3)]"
-              >
-                <div className="relative aspect-[4/5] rounded-sm overflow-hidden">
-                  {/* Le visuel grossit au survol ; le cartouche reste immobile. */}
-                  <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.06]">
-                    <div className={`${item.gradientClass} absolute inset-0`} />
-                    <div className="absolute inset-0 p-8 text-white/45">
-                      {Illustration ? <Illustration /> : null}
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/30 transition-colors duration-300" />
-                  <span className="absolute top-4 left-4 bg-cream/90 text-charcoal text-[0.65rem] font-medium tracking-widest uppercase px-3 py-1 rounded-sm">
-                    {item.subtitle}
-                  </span>
-                </div>
-                <h3 className="font-playfair text-lg font-normal mt-4 group-hover:text-brand transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-muted text-sm mt-1">{item.desc}</p>
-              </article>
-            )
-          })}
-        </div>
-
-        {/* Une puce par page : six sur mobile, deux sur grand écran. */}
-        <div className="flex items-center justify-center gap-1 mt-6">
-          {Array.from({ length: pageCount }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => goToPage(i)}
-              aria-label={`Aller à la page ${i + 1} sur ${pageCount}`}
-              aria-current={i === page}
-              // La zone cliquable fait 44 px de haut ; seule la barre se voit.
-              className="group px-1 py-4"
+          {GALLERY_ITEMS.map((item, i) => (
+            <article
+              key={item.id}
+              {...revealed(2 + (i % 3), 'zoom')}
+              aria-roledescription="diapositive"
+              aria-label={`${i + 1} sur ${GALLERY_ITEMS.length} — ${item.title}`}
+              // Mobile : une image par écran. Grand écran : trois de front.
+              // Les `_` deviennent des espaces : `calc()` refuse un `-` collé.
+              className="group cursor-pointer snap-start shrink-0 w-full md:w-[calc((100%_-_3rem)/3)]"
             >
-              <span
-                className={`block h-1.5 rounded-full transition-all duration-300 ${
-                  i === page
-                    ? 'w-7 bg-brand'
-                    : 'w-1.5 bg-charcoal/20 group-hover:bg-charcoal/40'
-                }`}
-              />
-            </button>
+              <div className="relative aspect-[4/5] rounded-sm overflow-hidden bg-charcoal/5">
+                {/* Le visuel grossit au survol ; le cartouche reste immobile. */}
+                <Image
+                  src={item.image}
+                  alt={item.alt}
+                  fill
+                  // Une carte occupe toute la largeur sur mobile, un tiers au-delà :
+                  // le navigateur choisit ainsi la bonne taille de fichier.
+                  sizes="(max-width: 767px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                />
+                <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/30 transition-colors duration-300" />
+                <span className="absolute top-4 left-4 bg-cream/90 text-charcoal text-[0.65rem] font-medium tracking-widest uppercase px-3 py-1 rounded-sm">
+                  {item.subtitle}
+                </span>
+              </div>
+              <h3 className="font-playfair text-lg font-normal mt-4 group-hover:text-brand transition-colors">
+                {item.title}
+              </h3>
+              <p className="text-muted text-sm mt-1">{item.desc}</p>
+            </article>
           ))}
         </div>
 
-        <p className="md:hidden text-muted text-xs text-center">
-          Faites glisser pour parcourir les projets
-        </p>
+        {/* Une puce par page. Aucune quand tout tient sur un écran : une puce
+            solitaire n'indique rien et ne mène nulle part. Sur mobile, où les
+            photos défilent une à une, elles réapparaissent d'elles-mêmes. */}
+        {pageCount > 1 && (
+          <>
+            <div className="flex items-center justify-center gap-1 mt-6">
+              {Array.from({ length: pageCount }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goToPage(i)}
+                  aria-label={`Aller à la page ${i + 1} sur ${pageCount}`}
+                  aria-current={i === page}
+                  // La zone cliquable fait 44 px de haut ; seule la barre se voit.
+                  className="group px-1 py-4"
+                >
+                  <span
+                    className={`block h-1.5 rounded-full transition-all duration-300 ${
+                      i === page
+                        ? 'w-7 bg-brand'
+                        : 'w-1.5 bg-charcoal/20 group-hover:bg-charcoal/40'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <p className="md:hidden text-muted text-xs text-center">
+              Faites glisser pour parcourir les projets
+            </p>
+          </>
+        )}
       </div>
     </section>
   )

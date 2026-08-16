@@ -18,13 +18,38 @@ export const OPTIONS: { key: OptionKey; label: string; price: number }[] = [
   { key: 'optTiroirs', label: 'Tiroirs intérieurs',  price: 280 },
 ]
 
+/**
+ * Les réalisations photographiées de l'atelier.
+ *
+ * Les fichiers vivent dans public/realisations/. Ajouter une réalisation =
+ * déposer sa photo et ajouter une entrée ici ; le carrousel reprend seul sa
+ * pagination par trois dès qu'il y a de quoi remplir une deuxième page.
+ */
 export const GALLERY_ITEMS: GalleryItem[] = [
-  { id: 1, title: 'Dressing panoramique', subtitle: 'Noyer massif',   desc: 'Noyer massif, finition huile naturelle',         gradientClass: 'gallery-img-1' },
-  { id: 2, title: 'Cuisine contemporaine', subtitle: 'Chêne blanchi', desc: 'Chêne blanchi, plan de travail marbre',           gradientClass: 'gallery-img-2' },
-  { id: 3, title: 'Bibliothèque',          subtitle: 'Frêne laqué',   desc: 'Frêne, finition laque mate',                     gradientClass: 'gallery-img-3' },
-  { id: 4, title: 'Salle de bain',         subtitle: 'Teck naturel',  desc: 'Teck, finition hydrofuge',                       gradientClass: 'gallery-img-4' },
-  { id: 5, title: 'Meuble TV intégré',     subtitle: 'Chêne fumé',   desc: 'Chêne fumé, métal noir mat',                     gradientClass: 'gallery-img-5' },
-  { id: 6, title: 'Bureau architecte',     subtitle: 'Noyer & cuir',  desc: 'Noyer, cuir naturel',                            gradientClass: 'gallery-img-6' },
+  {
+    id: 1,
+    title: 'Placard toute hauteur',
+    subtitle: 'Chêne clair',
+    desc: 'Quatre portes du sol au plafond, poignées noires, ajusté entre les murs.',
+    image: '/realisations/dressing.jpg',
+    alt: "Placard sur mesure à quatre portes en chêne clair, poignées noires, occupant toute la hauteur d'un mur de chambre.",
+  },
+  {
+    id: 2,
+    title: 'Bibliothèque murale',
+    subtitle: 'Chêne & métal noir',
+    desc: 'Montants en métal noir, tablettes en chêne, rangements fermés en soubassement.',
+    image: '/realisations/bibliotheque.jpg',
+    alt: 'Bibliothèque murale à structure métallique noire et tablettes en chêne, posée sur un soubassement de placards bas.',
+  },
+  {
+    id: 3,
+    title: 'Cuisine sur mesure',
+    subtitle: 'Chêne & pierre noire',
+    desc: 'Façades chêne, plan de travail en pierre noire, évier de ferme en céramique.',
+    image: '/realisations/cuisine.jpg',
+    alt: 'Cuisine sur mesure aux façades en chêne, plan de travail en pierre noire et évier de ferme en céramique blanche.',
+  },
 ]
 
 export const PROCESS_STEPS = [
