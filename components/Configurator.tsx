@@ -16,6 +16,8 @@ import { MATERIALS, OPTIONS } from '@/lib/constants'
 import { FURNITURE, FURNITURE_KEYS, initialConfigs } from '@/lib/furniture'
 import { calcPrix, formatPrice } from '@/lib/pricing'
 import { SCHEMATICS } from './Schematics'
+import { useDevis } from './DevisProvider'
+import { resumeDevis } from '@/lib/devis'
 
 const MATERIAL_KEYS = Object.keys(MATERIALS) as MaterialKey[]
 
@@ -46,6 +48,8 @@ export default function Configurator() {
   const [store, setStore] = useState<Record<FurnitureKey, FurnitureConfig>>(initialConfigs)
   // Le matériau, lui, est commun : le choix d'essence vaut pour tout le catalogue.
   const [materiau, setMateriau] = useState<MaterialKey>('chene')
+
+  const { deposerBrouillon } = useDevis()
 
   const meuble = FURNITURE[type]
   const config = store[type]
@@ -227,10 +231,38 @@ export default function Configurator() {
                 </button>
               )
             })}
+
+            {/* Sortie de secours : ce que le configurateur ne sait pas dessiner
+                se raconte au formulaire, sans rien pré-remplir. */}
+            <a
+              href="#contact"
+              onClick={() => deposerBrouillon('')}
+              className="flex-none w-[120px] flex flex-col items-center gap-2 p-3 rounded-sm border border-dashed border-brand/40 text-muted hover:border-brand hover:text-brand transition-colors"
+            >
+              <span className="w-full aspect-square flex items-center justify-center">
+                <svg
+                  viewBox="0 0 120 120"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.3}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-full h-full"
+                  aria-hidden="true"
+                >
+                  <rect x="16" y="24" width="88" height="72" rx="3" strokeDasharray="5 4" />
+                  <path d="M60 46 V74 M46 60 H74" />
+                </svg>
+              </span>
+              <span className="text-charcoal text-[0.7rem] text-center leading-tight">
+                Autre projet
+              </span>
+            </a>
           </div>
         </div>
         <p className="text-muted text-xs mt-2">
-          Neuf familles au catalogue — faites défiler pour toutes les voir.
+          Neuf familles au catalogue — faites défiler pour toutes les voir. Votre
+          projet n&apos;y figure pas&nbsp;? Choisissez «&nbsp;Autre projet&nbsp;».
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-10">
@@ -346,10 +378,14 @@ export default function Configurator() {
               </div>
               <a
                 href="#contact"
+                onClick={() => deposerBrouillon(resumeDevis(type, config, materiau))}
                 className="mt-5 block text-center bg-brand text-white text-sm font-medium px-8 py-3.5 rounded-sm hover:bg-brand-dark transition-colors"
               >
                 Demander ce devis
               </a>
+              <p className="text-white/45 text-xs text-center mt-3">
+                Votre configuration sera recopiée dans le formulaire.
+              </p>
             </div>
           </div>
         </div>

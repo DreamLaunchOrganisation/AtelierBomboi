@@ -146,7 +146,8 @@
     display: none;
   }
 
-  /* Hero grid pattern */
+  /* Hero grid pattern — la trame dérive en diagonale. Le motif se répète tous
+     les 61 px : décaler le fond d'exactement 61 px boucle sans raccord. */
   .hero-pattern {
     background-image:
       repeating-linear-gradient(
@@ -157,5 +158,87 @@
         90deg, transparent, transparent 60px,
         rgba(236,88,2,0.04) 60px, rgba(236,88,2,0.04) 61px
       );
+    animation: hero-weave 26s linear infinite;
+  }
+  @keyframes hero-weave {
+    to { background-position: 61px 61px, 61px 61px; }
+  }
+
+  /* Le halo d'accent respire. Il vit sur un élément interne : l'enveloppe, elle,
+     porte déjà la transformation de la révélation d'entrée. */
+  .hero-halo {
+    animation: hero-halo 11s ease-in-out infinite;
+  }
+  @keyframes hero-halo {
+    0%, 100% { opacity: 0.62; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.1); }
+  }
+
+  /* --------------------------------------------------------------------
+     L'épure du hero : chaque trait se dessine, la cote s'inscrit, puis le
+     meuble s'efface et le suivant prend sa place.
+
+     Le cycle dure 36 s pour quatre meubles : chacun occupe un quart, décalé
+     par `--k`. Dans un meuble, `--d` échelonne les traits. `pathLength=1`
+     normalise chaque tracé, sinon un petit trait se dessinerait d'un coup
+     et un grand trop lentement.
+     -------------------------------------------------------------------- */
+  .blueprint [data-trace] {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    animation: trace 48s ease-in-out infinite;
+    /* 1 s par rang : c'est ce délai qui fait qu'on voit le plan se construire
+       plutôt qu'apparaître. Le dernier trait démarre 3,1 s après le premier. */
+    animation-delay: calc(var(--k, 0) * 12s + var(--d, 0) * 1s);
+  }
+  /* Ce qui porte le meuble. */
+  .blueprint [data-trace='porteur'] { stroke: #ec5802; }
+  /* Refends et étagères : en retrait, pour que la carcasse se lise d'abord. */
+  .blueprint [data-trace='refend'] { stroke: rgba(255, 255, 255, 0.4); }
+
+  .blueprint [data-trace-text] {
+    fill: #ec5802;
+    stroke: none;
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    opacity: 0;
+    animation: trace-text 48s ease-in-out infinite;
+    animation-delay: calc(var(--k, 0) * 12s + 3s);
+  }
+
+  /* Cycle de 48 s, quatre meubles de 12 s. Dans son créneau, un trait se
+     dessine en 2,5 s, tient, puis s'efface — le tout avant que le meuble
+     suivant ne commence, malgré les 3,1 s d'échelonnement. */
+  @keyframes trace {
+    0%          { stroke-dashoffset: 1; opacity: 1; }
+    5.2%        { stroke-dashoffset: 0; opacity: 1; }
+    14.6%       { stroke-dashoffset: 0; opacity: 1; }
+    17.7%       { stroke-dashoffset: 0; opacity: 0; }
+    18%, 100%   { stroke-dashoffset: 1; opacity: 0; }
+  }
+  /* Le chiffre s'inscrit une fois sa ligne de cote tracée, pas avant. */
+  @keyframes trace-text {
+    0%, 4%     { opacity: 0; }
+    6%, 14.6%  { opacity: 1; }
+    17.7%      { opacity: 0; }
+    18%, 100%  { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-pattern,
+    .hero-halo,
+    .blueprint [data-trace],
+    .blueprint [data-trace-text] {
+      animation: none;
+    }
+    /* Un seul meuble, tracé et figé, plutôt que les quatre superposés. */
+    .blueprint > g { display: none; }
+    .blueprint > g:first-of-type { display: block; }
+    .blueprint > g:first-of-type [data-trace] {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+    .blueprint > g:first-of-type [data-trace-text] { opacity: 1; }
   }
 }

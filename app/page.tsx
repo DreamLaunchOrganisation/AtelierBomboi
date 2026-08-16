@@ -7,9 +7,13 @@ import Process from '@/components/Process'
 import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 import Reveal from '@/components/Reveal'
+import { DevisProvider } from '@/components/DevisProvider'
 
 export default function Home() {
   return (
+    // Le configurateur dépose sa configuration en mots, le formulaire de
+    // contact la reprend : le fournisseur enjambe les deux sections.
+    <DevisProvider>
     <main>
       {/* La barre de navigation reste fixe et immobile : c'est du mobilier, pas
           du contenu à révéler. Le configurateur non plus ne s'anime pas —
@@ -36,5 +40,6 @@ export default function Home() {
         <Footer />
       </Reveal>
     </main>
+    </DevisProvider>
   )
 }
