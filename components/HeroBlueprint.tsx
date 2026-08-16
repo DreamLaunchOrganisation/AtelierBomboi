@@ -91,18 +91,21 @@ export default function HeroBlueprint() {
 
       {/* ---------- Escalier ----------
           La volée part du sol et monte par pas de 20 : les angles rentrants
-          tombent tous sur la droite y = 208 − x, qui est donc exactement le
-          limon. La rampe lui est parallèle, 22 plus haut. */}
+          tombent tous sur la droite y = 200 − x, qui est donc exactement le
+          limon. La rampe lui est parallèle, 22 plus haut.
+
+          Le sol est à 172 et non 180 : la ligne de terre passait sinon sous
+          la cote chiffrée, qui monte jusqu'à 178 depuis sa ligne de base. */}
       <g {...piece(2)}>
         <path
           {...trace(0)}
-          d="M28 180 V160 H48 V140 H68 V120 H88 V100 H108 V80 H128 V60 H148 V40 H168"
+          d="M28 172 V152 H48 V132 H68 V112 H88 V92 H108 V72 H128 V52 H148 V32 H168"
         />
-        <path {...refend(1.6)} d="M168 40 L28 180" />
-        <path {...trace(2)} d="M18 180 H182" />
-        <path {...refend(2.4)} d="M40 146 L172 14" />
-        <path {...refend(2.6)} d="M60 140 V126" />
-        <path {...refend(2.75)} d="M140 60 V46" />
+        <path {...refend(1.6)} d="M168 32 L28 172" />
+        <path {...trace(2)} d="M18 172 H182" />
+        <path {...refend(2.4)} d="M40 138 L172 6" />
+        <path {...refend(2.6)} d="M60 132 V118" />
+        <path {...refend(2.75)} d="M140 52 V38" />
         <path {...trace(3.1)} d="M28 192 H168" />
         <path {...trace(3.1)} d="M28 187 V197" />
         <path {...trace(3.1)} d="M168 187 V197" />
@@ -119,11 +122,16 @@ export default function HeroBlueprint() {
         {/* Le pied arrière-droit démarre sous le plateau, pas devant : son
             sommet suit le dessous du chant, de 79 à 73 selon l'abscisse. */}
         <path {...refend(2.2)} d="M160 79 V134 M166 73 V134 M160 134 H166" />
-        <path {...refend(2.5)} d="M54 84 V140 M60 84 V140 M54 140 H60" />
+        {/* Les pieds arrière reposent 16 plus haut que ceux de devant, comme
+            le veut le décalage de la perspective. Celui de gauche s'arrêtait
+            à 140 : il s'enfonçait de six unités sous le plan du sol. */}
+        <path {...refend(2.5)} d="M54 84 V134 M60 84 V134 M54 134 H60" />
         <path {...trace(3.1)} d="M28 170 H172" />
         <path {...trace(3.1)} d="M28 165 V175" />
         <path {...trace(3.1)} d="M172 165 V175" />
-        <text {...cote} x="100" y="190" textAnchor="middle">220 cm</text>
+        {/* Le chiffre se place au-dessus de sa ligne, comme sur les trois
+            autres meubles — il était le seul à passer dessous. */}
+        <text {...cote} x="100" y="164" textAnchor="middle">220 cm</text>
       </g>
     </svg>
   )

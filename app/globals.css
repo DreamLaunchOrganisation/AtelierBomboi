@@ -175,10 +175,20 @@
      normalise chaque tracé, sinon un petit trait se dessinerait d'un coup
      et un grand trop lentement.
      -------------------------------------------------------------------- */
+  /* Le meuble apparaît et disparaît d'un bloc, porté par son groupe.
+     Auparavant chaque trait gérait sa propre disparition : comme le délai
+     décale l'animation entière, les traits s'effaçaient dans l'ordre où ils
+     étaient apparus. Le dessin se démembrait et la cote lui survivait
+     plusieurs secondes. */
+  .blueprint > g {
+    opacity: 0;
+    animation: piece 48s ease-in-out infinite;
+    animation-delay: calc(var(--k, 0) * 12s);
+  }
+
   .blueprint [data-trace] {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    opacity: 0;
     animation: trace 48s ease-in-out infinite;
     /* 1 s par rang : c'est ce délai qui fait qu'on voit le plan se construire
        plutôt qu'apparaître. Le dernier trait démarre 3,1 s après le premier. */
@@ -199,38 +209,42 @@
     animation-delay: calc(var(--k, 0) * 12s + 3s);
   }
 
-  /* Cycle de 48 s, quatre meubles de 12 s. Dans son créneau, un trait se
-     dessine en 2,5 s, tient, puis s'efface — le tout avant que le meuble
-     suivant ne commence, malgré les 3,1 s d'échelonnement. */
-  @keyframes trace {
-    0%          { stroke-dashoffset: 1; opacity: 1; }
-    5.2%        { stroke-dashoffset: 0; opacity: 1; }
-    14.6%       { stroke-dashoffset: 0; opacity: 1; }
-    17.7%       { stroke-dashoffset: 0; opacity: 0; }
-    18%, 100%   { stroke-dashoffset: 1; opacity: 0; }
+  /* Cycle de 48 s, quatre meubles de 12 s chacun. Le meuble reste à l'écran
+     un peu plus de neuf secondes, puis s'efface en une seconde. */
+  @keyframes piece {
+    0%, 19%   { opacity: 1; }
+    21%, 100% { opacity: 0; }
   }
+
+  /* Un trait se dessine en 2,5 s puis attend. La remise à zéro survient à
+     21 %, alors que le groupe est déjà masqué : elle ne se voit pas, et elle
+     garantit que le meuble repart vierge au cycle suivant. */
+  @keyframes trace {
+    0%           { stroke-dashoffset: 1; }
+    5.2%         { stroke-dashoffset: 0; }
+    21%          { stroke-dashoffset: 0; }
+    21.01%, 100% { stroke-dashoffset: 1; }
+  }
+
   /* Le chiffre s'inscrit une fois sa ligne de cote tracée, pas avant. */
   @keyframes trace-text {
-    0%, 4%     { opacity: 0; }
-    6%, 14.6%  { opacity: 1; }
-    17.7%      { opacity: 0; }
-    18%, 100%  { opacity: 0; }
+    0%, 5%       { opacity: 0; }
+    8%, 21%      { opacity: 1; }
+    21.01%, 100% { opacity: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-pattern,
     .hero-halo,
+    .blueprint > g,
     .blueprint [data-trace],
     .blueprint [data-trace-text] {
       animation: none;
     }
     /* Un seul meuble, tracé et figé, plutôt que les quatre superposés. */
-    .blueprint > g { display: none; }
+    .blueprint > g { display: none; opacity: 1; }
     .blueprint > g:first-of-type { display: block; }
-    .blueprint > g:first-of-type [data-trace] {
-      stroke-dashoffset: 0;
-      opacity: 1;
-    }
+    .blueprint > g:first-of-type [data-trace] { stroke-dashoffset: 0; }
     .blueprint > g:first-of-type [data-trace-text] { opacity: 1; }
   }
 }
