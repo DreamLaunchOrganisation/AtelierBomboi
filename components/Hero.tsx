@@ -1,3 +1,4 @@
+import HeroBlueprint from './HeroBlueprint'
 import { revealed, revealedGlow } from '@/lib/reveal'
 
 export default function Hero() {
@@ -16,14 +17,17 @@ export default function Hero() {
       {/* Grille subtile */}
       <div className="absolute inset-0 hero-pattern opacity-100" />
 
-      {/* Accent doré */}
-      <div
-        {...revealedGlow()}
-        className="absolute top-0 right-0 w-[45%] h-full bg-gradient-to-bl from-brand/10 to-transparent"
-      />
+      {/* Accent doré. L'enveloppe porte la révélation d'entrée, l'élément
+          interne la respiration continue : deux transformations qui se
+          composent au lieu de s'écraser. */}
+      <div {...revealedGlow()} className="absolute top-0 right-0 w-[45%] h-full">
+        <div className="hero-halo absolute inset-0 bg-gradient-to-bl from-brand/12 to-transparent" />
+      </div>
 
       {/* Contenu */}
-      <div className="relative z-10 max-w-2xl">
+      {/* Colonne resserrée à lg : c'est la seule largeur où le titre et l'épure
+          se disputeraient la place. */}
+      <div className="relative z-10 max-w-2xl lg:max-w-xl xl:max-w-2xl">
         <div
           {...revealed(0)}
           className="inline-block bg-brand/15 border border-brand/30 text-brand text-xs font-medium tracking-[0.12em] uppercase px-4 py-1.5 rounded-sm mb-6"
@@ -57,6 +61,23 @@ export default function Hero() {
           >
             Voir les réalisations
           </a>
+        </div>
+      </div>
+
+      {/* L'épure, calée dans l'accent du bord droit. Masquée en dessous de lg,
+          où le titre occupe déjà toute la largeur disponible.
+
+          `bottom-20` répond au `pb-20` de la section : la ligne de cote se
+          pose donc exactement sur la même ligne que le bas des boutons, à
+          toutes les tailles d'écran, sans pourcentage à ajuster.
+
+          Deux div imbriquées, et c'est nécessaire : l'enveloppe positionne,
+          l'élément interne porte la révélation d'entrée. Réunies sur un seul
+          élément, le `transform: none` de fin de révélation écraserait toute
+          transformation de mise en page. */}
+      <div className="hidden lg:block absolute z-10 bottom-20 right-[3%] xl:right-[5%] 2xl:right-[8%] w-[30%] xl:w-[36%] 2xl:w-[40%] max-w-[620px]">
+        <div {...revealed(4, 'right')}>
+          <HeroBlueprint />
         </div>
       </div>
 
