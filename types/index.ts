@@ -1,6 +1,17 @@
 import type * as THREE from 'three'
 
-export type MaterialKey = 'chene' | 'noyer' | 'blanc' | 'anthracite'
+/**
+ * Les finitions du catalogue. Les quatre premières servent aux meubles en bois ;
+ * les trois dernières sont la gamme panneau du placard droit.
+ */
+export type MaterialKey =
+  | 'chene'
+  | 'noyer'
+  | 'blanc'
+  | 'anthracite'
+  | 'melamine'
+  | 'stratifie'
+  | 'placage'
 
 /** Les neuf familles de meubles proposées à la présélection. */
 export type FurnitureKey =
@@ -26,6 +37,8 @@ export interface NumberParam {
   step: number
   /** Suffixe affiché à côté de la valeur. ' cm' par défaut, '' pour un décompte. */
   unit?: string
+  /** Précision affichée en petit sous le curseur — une règle de tarif, une contrainte. */
+  hint?: string
   def: number
 }
 
@@ -61,6 +74,8 @@ export interface FurnitureType {
   params: ParamDef[]
   /** Options globales applicables à ce meuble. */
   options: OptionKey[]
+  /** Finitions proposées pour ce type. Par défaut MATERIAUX_BOIS. */
+  materials?: MaterialKey[]
   /** Gabarit maximal en mètres — sert à cadrer la caméra sur le type. */
   maxDims: { w: number; h: number; d: number }
   build(config: FurnitureConfig, color: number): THREE.Group
@@ -71,13 +86,16 @@ export interface FurnitureType {
 export interface MaterialInfo {
   color: number
   name: string
+  /** Multiplicateur du prix total hors options. 1 = tarif de référence. */
   mult: number
   hex: string
+  /** Précision affichée sous le nom — « couleur au choix », « huile au choix ». */
+  note?: string
 }
 
 export interface PriceBreakdown {
-  pStructure: number
-  pMateriau: number
+  /** Le meuble lui-même : fabrication et finition, hors options. */
+  pMeuble: number
   pOptions: number
   total: number
 }

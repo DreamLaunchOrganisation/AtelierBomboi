@@ -12,14 +12,20 @@ import type {
   ParamValue,
   ToggleParam,
 } from '@/types'
-import { MATERIALS, OPTIONS } from '@/lib/constants'
+import { MATERIALS, MATERIAUX_BOIS, OPTIONS } from '@/lib/constants'
 import { FURNITURE, FURNITURE_KEYS, initialConfigs } from '@/lib/furniture'
 import { calcPrix, formatPrice } from '@/lib/pricing'
 import { SCHEMATICS } from './Schematics'
 import { useDevis } from './DevisProvider'
 import { resumeDevis } from '@/lib/devis'
 
-const MATERIAL_KEYS = Object.keys(MATERIALS) as MaterialKey[]
+/**
+ * Les finitions proposées pour un type de meuble : sa gamme propre quand il en
+ * déclare une — le placard droit se fait en panneau, pas en bois massif — et
+ * les essences du catalogue sinon.
+ */
+const materiauxDe = (type: FurnitureKey): MaterialKey[] =>
+  FURNITURE[type].materials ?? MATERIAUX_BOIS
 
 /**
  * Place la caméra pour que le plus grand meuble possible du type courant tienne
@@ -46,8 +52,8 @@ export default function Configurator() {
   // Une configuration mémorisée par type : revenir sur un meuble déjà réglé
   // restitue ses mesures.
   const [store, setStore] = useState<Record<FurnitureKey, FurnitureConfig>>(initialConfigs)
-  // Le matériau, lui, est commun : le choix d'essence vaut pour tout le catalogue.
-  const [materiau, setMateriau] = useState<MaterialKey>('chene')
+  // Le matériau suit le meuble : chaque famille a sa gamme de finitions.
+  const [materiau, setMateriau] = useState<MaterialKey>(() => materiauxDe('placard')[0])
 
   const { deposerBrouillon } = useDevis()
 
@@ -161,6 +167,13 @@ export default function Configurator() {
     if (camera) frameCamera(camera, dimsRef.current)
   }, [type])
 
+  // La finition en cours n'existe pas forcément dans la gamme du nouveau type :
+  // on garde celle du client quand elle s'y trouve, sinon on prend la première.
+  useEffect(() => {
+    const gamme = materiauxDe(type)
+    setMateriau((prev) => (gamme.includes(prev) ? prev : gamme[0]))
+  }, [type])
+
   // Reconstruit le meuble à chaque changement de type, de mesure ou d'essence
   useEffect(() => {
     const scene = sceneRef.current
@@ -186,6 +199,7 @@ export default function Configurator() {
 
   const prix = calcPrix(type, config, materiau)
   const options = OPTIONS.filter((o) => meuble.options.includes(o.key))
+  const materiaux = materiauxDe(type)
 
   return (
     <section id="configurateur" className="bg-cream px-6 md:px-12 py-20 md:py-28">
@@ -302,14 +316,19 @@ export default function Configurator() {
               <div className="text-charcoal text-xs uppercase tracking-widest mb-3">
                 Matériau
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {MATERIAL_KEYS.map((key) => {
+              <div
+                className={`grid grid-cols-2 gap-3 ${
+                  materiaux.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+                }`}
+              >
+                {materiaux.map((key) => {
                   const m = MATERIALS[key]
                   const active = materiau === key
                   return (
                     <button
                       key={key}
                       onClick={() => setMateriau(key)}
+                      aria-pressed={active}
                       className={`flex flex-col items-center gap-2 p-3 rounded-sm border transition-colors ${
                         active ? 'border-brand bg-white' : 'border-brand/20 hover:border-brand/50'
                       }`}
@@ -321,6 +340,11 @@ export default function Configurator() {
                       <span className="text-charcoal text-[0.7rem] text-center leading-tight">
                         {m.name}
                       </span>
+                      {m.note && (
+                        <span className="text-muted text-[0.62rem] text-center leading-tight">
+                          {m.note}
+                        </span>
+                      )}
                     </button>
                   )
                 })}
@@ -363,8 +387,7 @@ export default function Configurator() {
             {/* Prix */}
             <div className="bg-charcoal rounded-sm p-6 text-white">
               <div className="flex flex-col gap-2 text-sm">
-                <Row label="Structure" value={formatPrice(prix.pStructure)} />
-                <Row label="Matériau" value={formatPrice(prix.pMateriau)} />
+                <Row label="Meuble" value={formatPrice(prix.pMeuble)} />
                 <Row label="Options" value={formatPrice(prix.pOptions)} />
               </div>
               <div className="h-px bg-white/15 my-4" />
@@ -440,6 +463,7 @@ function SliderRow({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
+      {param.hint && <p className="text-muted text-[0.7rem] mt-1.5">{param.hint}</p>}
     </div>
   )
 }

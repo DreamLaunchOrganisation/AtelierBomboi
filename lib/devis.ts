@@ -60,7 +60,7 @@ export function resumeDevis(
   lignes.push(
     '',
     `Estimation du configurateur : ${formatPrice(prix.total)}`,
-    `Structure ${formatPrice(prix.pStructure)} · Matériau ${formatPrice(prix.pMateriau)} · Options ${formatPrice(prix.pOptions)}`,
+    `Meuble ${formatPrice(prix.pMeuble)} · Options ${formatPrice(prix.pOptions)}`,
     '',
     'Estimation obtenue en ligne, à confirmer après visite technique.',
   )

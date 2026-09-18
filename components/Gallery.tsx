@@ -8,6 +8,12 @@ import { revealed } from '@/lib/reveal'
 /** Écart entre deux cartes, en pixels — doit suivre la classe `gap-6` du rail. */
 const GAP = 24
 
+/**
+ * Au-delà de ce nombre de pages, les puces cèdent la place à une jauge : une
+ * rangée de puces plus longue déborderait sur mobile.
+ */
+const MAX_PUCES = 8
+
 export default function Gallery() {
   const trackRef = useRef<HTMLDivElement>(null)
   // Cartes par page : 1 sur mobile, 3 sur grand écran. La valeur n'est pas
@@ -159,29 +165,54 @@ export default function Gallery() {
 
         {/* Une puce par page. Aucune quand tout tient sur un écran : une puce
             solitaire n'indique rien et ne mène nulle part. Sur mobile, où les
-            photos défilent une à une, elles réapparaissent d'elles-mêmes. */}
+            photos défilent une à une, elles réapparaissent d'elles-mêmes.
+
+            Passé une poignée de pages, la rangée de puces déborderait la
+            largeur de l'écran — et cinquante pastilles n'aident personne à
+            viser. On bascule alors sur une jauge d'avancement, qui dit où l'on
+            en est sans prétendre servir de menu. */}
         {pageCount > 1 && (
           <>
-            <div className="flex items-center justify-center gap-1 mt-6">
-              {Array.from({ length: pageCount }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goToPage(i)}
-                  aria-label={`Aller à la page ${i + 1} sur ${pageCount}`}
-                  aria-current={i === page}
-                  // La zone cliquable fait 44 px de haut ; seule la barre se voit.
-                  className="group px-1 py-4"
+            {pageCount <= MAX_PUCES ? (
+              <div className="flex items-center justify-center gap-1 mt-6">
+                {Array.from({ length: pageCount }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToPage(i)}
+                    aria-label={`Aller à la page ${i + 1} sur ${pageCount}`}
+                    aria-current={i === page}
+                    // La zone cliquable fait 44 px de haut ; seule la barre se voit.
+                    className="group px-1 py-4"
+                  >
+                    <span
+                      className={`block h-1.5 rounded-full transition-all duration-300 ${
+                        i === page
+                          ? 'w-7 bg-brand'
+                          : 'w-1.5 bg-charcoal/20 group-hover:bg-charcoal/40'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <span
+                  aria-hidden="true"
+                  className="block h-1.5 w-40 sm:w-64 rounded-full bg-charcoal/15 overflow-hidden"
                 >
                   <span
-                    className={`block h-1.5 rounded-full transition-all duration-300 ${
-                      i === page
-                        ? 'w-7 bg-brand'
-                        : 'w-1.5 bg-charcoal/20 group-hover:bg-charcoal/40'
-                    }`}
+                    className="block h-full bg-brand rounded-full transition-[width,margin-left] duration-300"
+                    style={{
+                      width: `${100 / pageCount}%`,
+                      marginLeft: `${(100 * page) / pageCount}%`,
+                    }}
                   />
-                </button>
-              ))}
-            </div>
+                </span>
+                <span className="text-muted text-xs tabular-nums">
+                  {page + 1} / {pageCount}
+                </span>
+              </div>
+            )}
 
             <p className="md:hidden text-muted text-xs text-center">
               Faites glisser pour parcourir les projets

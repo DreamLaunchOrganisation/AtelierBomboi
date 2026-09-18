@@ -3,8 +3,13 @@ import { MATERIALS, OPTIONS } from './constants'
 import { FURNITURE } from './furniture'
 
 /**
- * La ventilation affichée est la même pour les neuf meubles — structure,
- * matériau, options. Seule la base est propre au type et vient de son module.
+ * La ventilation affichée est la même pour les neuf meubles — le meuble d'un
+ * côté, les options de l'autre. Seule la base est propre au type et vient de
+ * son module.
+ *
+ * La finition multiplie le prix du meuble : c'est ainsi que l'atelier raisonne
+ * (un même module coûte 800 € en mélaminé et 1440 € en stratifié). Fabrication
+ * et matière ne se distinguent pas dans le devis, elles tiennent en un poste.
  */
 export function calcPrix(
   type: FurnitureKey,
@@ -13,8 +18,7 @@ export function calcPrix(
 ): PriceBreakdown {
   const base = FURNITURE[type].price(config)
 
-  const pStructure = Math.round(base * 0.6)
-  const pMateriau = Math.round(base * 0.4 * MATERIALS[materiau].mult)
+  const pMeuble = Math.round(base * MATERIALS[materiau].mult)
 
   const applicables = FURNITURE[type].options
   const pOptions = OPTIONS.filter((o) => applicables.includes(o.key) && config[o.key]).reduce(
@@ -22,7 +26,7 @@ export function calcPrix(
     0,
   )
 
-  return { pStructure, pMateriau, pOptions, total: pStructure + pMateriau + pOptions }
+  return { pMeuble, pOptions, total: pMeuble + pOptions }
 }
 
 export function formatPrice(value: number): string {
