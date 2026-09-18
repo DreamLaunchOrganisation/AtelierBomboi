@@ -16,19 +16,22 @@ export function calcPrix(
   config: FurnitureConfig,
   materiau: MaterialKey,
 ): PriceBreakdown {
-  const base = FURNITURE[type].price(config)
+  const meuble = FURNITURE[type]
 
-  const pMeuble = Math.round(base * MATERIALS[materiau].mult)
+  const pMeuble = meuble.priceOverride
+    ? Math.round(meuble.priceOverride(config, materiau))
+    : Math.round(meuble.price(config) * MATERIALS[materiau].mult)
 
-  const applicables = FURNITURE[type].options
-  const pOptions = OPTIONS.filter((o) => applicables.includes(o.key) && config[o.key]).reduce(
-    (sum, o) => sum + o.price,
-    0,
-  )
+  const pOptions = meuble.optionsOverride
+    ? Math.round(meuble.optionsOverride(config))
+    : OPTIONS.filter((o) => meuble.options.includes(o.key) && config[o.key]).reduce(
+        (sum, o) => sum + o.price,
+        0,
+      )
 
   return { pMeuble, pOptions, total: pMeuble + pOptions }
 }
 
-export function formatPrice(value: number): string {
-  return value.toLocaleString('fr-BE') + ' €'
+export function formatPrice(value: number, unit = ' €'): string {
+  return value.toLocaleString('fr-BE') + unit
 }

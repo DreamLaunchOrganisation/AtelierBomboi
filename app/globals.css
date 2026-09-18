@@ -247,4 +247,29 @@
     .blueprint > g:first-of-type [data-trace] { stroke-dashoffset: 0; }
     .blueprint > g:first-of-type [data-trace-text] { opacity: 1; }
   }
+
+  /* Easter egg Konami code — voir components/KonamiForest.tsx */
+  @keyframes konami-grow {
+    from { opacity: 0; transform: scale(0) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .konami-tree-enter {
+    animation: konami-grow 0.4s ease-out both;
+  }
+
+  @keyframes konami-sway {
+    0%, 100% { transform: rotate(-4deg); }
+    50%      { transform: rotate(4deg); }
+  }
+  .konami-tree-sway {
+    display: inline-block;
+    animation: konami-sway 3s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .konami-tree-enter,
+    .konami-tree-sway {
+      animation: none;
+    }
+  }
 }

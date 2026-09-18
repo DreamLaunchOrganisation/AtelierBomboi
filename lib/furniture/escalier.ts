@@ -14,6 +14,7 @@ export const escalier: FurnitureType = {
   label: 'Escalier',
   tagline: 'Volée droite sur deux limons. Un quart tournant se chiffre sur place.',
   options: ['optLumiere'],
+  materials: ['chene', 'hetre'],
   // Les limons débordent la volée en hauteur comme en longueur.
   maxDims: { w: 1.5, h: 3.8, d: 7 },
   params: [
@@ -63,11 +64,13 @@ export const escalier: FurnitureType = {
     return b.center()
   },
 
-  // TARIFS PROVISOIRES — à caler avec le client
+  // Tarif calé sur l'unique repère donné par l'atelier : 300 cm à monter, 90 cm
+  // de large → 3 800 € en chêne (mult 1.0), 3 400 € en hêtre (mult 0.895, voir
+  // constants.ts). Faute d'un second repère, le prix est supposé proportionnel
+  // à la hauteur à monter et à la largeur — à affiner avec l'atelier.
   price(config) {
-    const n = num(config, 'marches')
-    const largeurFacteur = num(config, 'largeur') / 90
-    const contremarches = bool(config, 'contremarches') ? n * 75 : 0
-    return (n * 340 + contremarches) * largeurFacteur + 620
+    const h = num(config, 'monter')
+    const w = num(config, 'largeur')
+    return (h / 300) * (w / 90) * 3800
   },
 }

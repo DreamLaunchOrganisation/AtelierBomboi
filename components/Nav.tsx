@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const NAV_LINKS = [
   { href: '#savoir-faire', label: 'Savoir-faire' },
@@ -101,8 +102,15 @@ export default function Nav() {
       <SocialGradients />
 
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-5 bg-cream/90 backdrop-blur-md border-b border-brand/20 transition-all">
-        <Link href="#" className="font-playfair text-2xl text-charcoal tracking-tight">
-          L&apos;atelier <span className="text-brand italic">Bomboi</span>
+        <Link href="#" className="flex items-center">
+          <Image
+            src="/logo-bomboi.png"
+            alt="L'atelier Bomboi — Menuiserie"
+            width={648}
+            height={182}
+            className="h-12 w-auto"
+            priority
+          />
         </Link>
 
         {/* Liens desktop */}

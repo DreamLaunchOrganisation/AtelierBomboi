@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import KonamiForest from '@/components/KonamiForest'
 
 export const metadata: Metadata = {
   title: "L'Atelier Bomboi — Menuiserie sur Mesure à Charleroi",
@@ -28,6 +29,7 @@ export default function RootLayout({
           <style>{`.reveal-root [data-reveal],.reveal-root [data-reveal-glow]{opacity:1;transform:none;filter:none}`}</style>
         </noscript>
         {children}
+        <KonamiForest />
       </body>
     </html>
   )

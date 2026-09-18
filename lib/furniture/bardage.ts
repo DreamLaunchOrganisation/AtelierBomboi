@@ -1,36 +1,67 @@
-import type { FurnitureType } from '@/types'
-import { Builder, INSULATION, T, cm, num, m2 } from './helpers'
+import type { FurnitureType, MaterialKey } from '@/types'
+import { Builder, INSULATION, T, num } from './helpers'
 
 const LATH_T = 0.02 // épaisseur d'une latte
+// Largeur de latte et jeu entre lattes : réglage d'atelier, pas un curseur client.
+const LATH_W = 0.12
+const LATH_GAP = 0.01
+// Isolation PU 12 cm, seule épaisseur au catalogue.
+const INSULATION_THICKNESS = 0.12
+
+// Pan de référence pour l'aperçu 3D — pas de jauge sur ce type, tarifé au m².
+const PREVIEW_W = 3
+const PREVIEW_H = 2.5
+
+/** Prix du parement (pare-pluie, lattage, contre-lattage et bardage), au m² HTVA. */
+const CLADDING_PRICE: Partial<Record<MaterialKey, number>> = {
+  ayous: 214,
+  autoclave: 185,
+  brule: 310,
+  filberteck: 295,
+}
+
+/** Prix de l'isolation PU 12 cm, au m² HTVA — toujours incluse. */
+const INSULATION_PRICE = 68
 
 /**
  * Bardage + isolation — le seul « meuble » qui n'est pas un volume mais une
- * paroi. On construit les couches dans l'ordre : mur support, isolant entre
- * montants, parement à lattes. Le parement s'arrête avant le bord droit pour
- * laisser voir la composition en tranche, comme sur le schéma.
+ * paroi, et le seul tarifé au m² : pas de largeur/hauteur à cadrer, le client
+ * tape directement la surface à couvrir, qui multiplie les deux rubriques de
+ * prix (parement, isolation) du matériau choisi.
  */
 export const bardage: FurnitureType = {
   key: 'bardage',
   label: 'Bardage + isolation',
-  tagline: 'Parement à lattes sur ossature, isolant apparent en tranche.',
-  options: ['optLumiere'],
-  // Les montants d'ossature dépassent de part et d'autre du pan.
-  maxDims: { w: 6.05, h: 3.5, d: 0.25 },
+  tagline: 'Parement à lattes sur ossature, isolant apparent en tranche. Tarifé au m².',
+  options: [],
+  materials: ['ayous', 'autoclave', 'brule', 'filberteck'],
+  priceLabels: {
+    meuble: 'Pare-pluie, lattage, contre-lattage et bardage',
+    options: 'Isolation (PU 12 cm)',
+    total: 'Estimation totale',
+  },
+  // Marge au-delà du pan réel : le cadrage colle sinon au bord du panneau, trop serré.
+  maxDims: { w: PREVIEW_W * 2.4, h: PREVIEW_H * 2.4, d: 0.25 },
   params: [
-    { kind: 'number', key: 'largeur', label: 'Largeur du pan', min: 100, max: 600, step: 10, def: 300 },
-    { kind: 'number', key: 'hauteur', label: 'Hauteur', min: 100, max: 350, step: 10, def: 250 },
-    { kind: 'number', key: 'latte', label: 'Largeur de latte', min: 6, max: 20, step: 1, def: 12 },
-    { kind: 'number', key: 'jeu', label: 'Jeu entre lattes', min: 0, max: 3, step: 0.5, def: 1 },
-    { kind: 'number', key: 'isolant', label: "Épaisseur d'isolant", min: 0, max: 20, step: 1, def: 10 },
+    {
+      kind: 'number',
+      key: 'surface',
+      label: 'Surface à couvrir',
+      min: 1,
+      max: 500,
+      step: 1,
+      unit: ' m²',
+      control: 'input',
+      def: 20,
+      hint: 'Pare-pluie, lattage, contre-lattage, bardage et isolation compris.',
+    },
   ],
 
-  build(config, color) {
+  build(_config, color) {
     const b = new Builder(color)
-    const w = cm(num(config, 'largeur'))
-    const h = cm(num(config, 'hauteur'))
-    const lw = cm(num(config, 'latte'))
-    const gap = cm(num(config, 'jeu'))
-    const ins = cm(num(config, 'isolant'))
+    const w = PREVIEW_W
+    const h = PREVIEW_H
+    const ins = INSULATION_THICKNESS
 
     const wall = b.material(0xdedad2, { rough: 0.95, metal: 0 })
     const insulation = b.material(INSULATION, { rough: 1, metal: 0 })
@@ -40,7 +71,7 @@ export const bardage: FurnitureType = {
 
     // Isolant entre montants
     const zIns = T / 2 + ins / 2
-    if (ins > 0) b.box(w, h, ins, 0, h / 2, zIns, insulation)
+    b.box(w, h, ins, 0, h / 2, zIns, insulation)
 
     // Montants d'ossature, noyés dans l'isolant
     const montantPitch = 0.6
@@ -54,19 +85,25 @@ export const bardage: FurnitureType = {
     const zLath = T / 2 + ins + LATH_T / 2
     const cut = Math.min(0.4, w * 0.14)
     const covered = w - cut
-    const pitch = lw + gap
+    const pitch = LATH_W + LATH_GAP
     const count = Math.max(1, Math.floor(covered / pitch))
     for (let i = 0; i < count; i++) {
-      b.box(lw, h, LATH_T, -w / 2 + pitch * i + lw / 2, h / 2, zLath)
+      b.box(LATH_W, h, LATH_T, -w / 2 + pitch * i + LATH_W / 2, h / 2, zLath)
     }
 
     return b.center()
   },
 
-  // TARIFS PROVISOIRES — à caler avec le client
+  // Prix de référence (repris par priceOverride pour chaque matériau) — non utilisé directement.
   price(config) {
-    const surface = m2(num(config, 'largeur'), num(config, 'hauteur'))
-    const poseIsolant = (num(config, 'isolant') / 10) * 45
-    return surface * (110 + poseIsolant)
+    return num(config, 'surface') * (CLADDING_PRICE.ayous ?? 0)
+  },
+
+  priceOverride(config, materiau) {
+    return num(config, 'surface') * (CLADDING_PRICE[materiau] ?? 0)
+  },
+
+  optionsOverride(config) {
+    return num(config, 'surface') * INSULATION_PRICE
   },
 }

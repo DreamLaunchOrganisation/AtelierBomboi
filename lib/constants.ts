@@ -13,6 +13,8 @@ export const MATERIALS: Record<MaterialKey, MaterialInfo> = {
   noyer:      { color: 0x5C3D1E, hex: '#5C3D1E', name: 'Noyer massif',   mult: 1.16 },
   blanc:      { color: 0xF0EDE8, hex: '#F0EDE8', name: 'Blanc mat',      mult: 0.94 },
   anthracite: { color: 0x3A3835, hex: '#3A3835', name: 'Anthracite',     mult: 0.96 },
+  // Mult calé sur le seul repère donné par l'atelier (escalier 300×90 : 3800 € chêne, 3400 € hêtre).
+  hetre:      { color: 0xE3C9A0, hex: '#E3C9A0', name: 'Hêtre massif',   mult: 0.895 },
 
   melamine:  {
     color: 0xEDE8E0, hex: '#EDE8E0', name: 'Mélaminé',
@@ -26,6 +28,23 @@ export const MATERIALS: Record<MaterialKey, MaterialInfo> = {
     color: 0xC4935A, hex: '#C4935A', name: 'Placage massif',
     note: 'chêne ou noyer, huile au choix', mult: 1.7625,
   },
+
+  // Gamme bardage — tarif au m² fixé par matériau (voir lib/furniture/bardage.ts),
+  // le mult ci-dessous ne sert pas puisque le type fournit son priceOverride.
+  ayous:      { color: 0xE8D9B0, hex: '#E8D9B0', name: 'Ayous',            mult: 1 },
+  autoclave:  { color: 0x2A2A28, hex: '#2A2A28', name: 'Autoclavé noir',   mult: 1 },
+  brule:      { color: 0x1C1712, hex: '#1C1712', name: 'Bois brûlé',       mult: 1 },
+  filberteck: { color: 0x8A7A63, hex: '#8A7A63', name: 'Filberteck',       mult: 1 },
+
+  // Gamme portes — prix par palier d'ébrasement (voir lib/furniture/portes.ts),
+  // le mult ci-dessous ne sert pas puisque le type fournit son priceOverride.
+  apeindre: { color: 0xF4F1EA, hex: '#F4F1EA', name: 'À peindre', mult: 1 },
+  massif:   { color: 0xC4935A, hex: '#C4935A', name: 'Massif',    mult: 1 },
+
+  // Chêne avec note « huile au choix » — même essence et même mult que `chene`,
+  // reprise à part pour ne pas afficher la note partout où `chene` est proposé.
+  cheneHuile: { color: 0xC4935A, hex: '#C4935A', name: 'Chêne', note: 'huile au choix', mult: 1.0 },
+  vitree:   { color: 0xBCC4C4, hex: '#BCC4C4', name: 'Vitrée',    mult: 1 },
 }
 
 /** Les essences des meubles en bois — la gamme par défaut d'un type. */

@@ -1,25 +1,43 @@
-import type { FurnitureType } from '@/types'
-import { Builder, METAL, cm, num, str, m2 } from './helpers'
+import type { FurnitureType, MaterialKey } from '@/types'
+import { Builder, METAL, cm, num, str } from './helpers'
 
 const LEAF = 0.04 // épaisseur d'un vantail
 const OPEN = 0.45 // angle d'ouverture affiché, en radians
 
+/** Prix par palier d'ébrasement (10 cm / 40 cm), interpolé linéairement entre les deux. */
+const DOOR_PRICE: Partial<Record<MaterialKey, [number, number]>> = {
+  apeindre: [360, 460],
+  stratifie: [450, 550],
+  massif: [600, 740],
+  vitree: [480, 620],
+}
+const EMBRASEMENT_MIN = 10
+const EMBRASEMENT_MAX = 40
+
 /**
- * Portes — vantaux battants à panneaux dans leur bâti. Les ouvrants sont
- * représentés entrebâillés : c'est ce qui les distingue d'un simple panneau.
+ * Portes — vantail battant à panneau dans son bâti. L'ouvrant est représenté
+ * entrebâillé : c'est ce qui le distingue d'un simple panneau.
  */
 export const portes: FurnitureType = {
   key: 'portes',
   label: 'Portes',
-  tagline: 'Battants à panneaux dans leur bâti, montrés entrebâillés.',
+  tagline: 'Battant à panneau dans son bâti, montré entrebâillé.',
   options: ['optMiroir'],
-  // Profondeur dictée par le vantail unique le plus large, qui débat le plus loin.
+  materials: ['apeindre', 'stratifie', 'massif', 'vitree'],
+  // Profondeur dictée par le vantail le plus large, qui débat le plus loin.
   maxDims: { w: 1.8, h: 2.7, d: 0.85 },
   params: [
     { kind: 'number', key: 'largeur', label: 'Largeur de passage', min: 60, max: 160, step: 5, def: 90 },
     { kind: 'number', key: 'hauteur', label: 'Hauteur', min: 190, max: 260, step: 5, def: 210 },
-    { kind: 'number', key: 'vantaux', label: 'Vantaux', min: 1, max: 2, step: 1, unit: '', def: 1 },
-    { kind: 'number', key: 'panneaux', label: 'Panneaux par vantail', min: 0, max: 4, step: 1, unit: '', def: 2 },
+    {
+      kind: 'number',
+      key: 'embrasement',
+      label: "Largeur de l'ébrasement",
+      min: EMBRASEMENT_MIN,
+      max: EMBRASEMENT_MAX,
+      step: 1,
+      def: 14,
+    },
     {
       kind: 'choice',
       key: 'sens',
@@ -36,11 +54,9 @@ export const portes: FurnitureType = {
     const b = new Builder(color)
     const w = cm(num(config, 'largeur'))
     const h = cm(num(config, 'hauteur'))
-    const n = num(config, 'vantaux')
-    const p = num(config, 'panneaux')
 
     const metal = b.material(METAL, { rough: 0.3, metal: 0.85 })
-    const jamb = 0.07
+    const jamb = cm(num(config, 'embrasement'))
     const frameD = 0.14
 
     // Bâti
@@ -48,46 +64,39 @@ export const portes: FurnitureType = {
     b.box(jamb, h + jamb, frameD, w / 2 + jamb / 2, (h + jamb) / 2, 0)
     b.box(w + 2 * jamb, jamb, frameD, 0, h + jamb / 2, 0)
 
-    const leafW = w / n
-    // Un vantail seul pivote du côté choisi ; une double porte s'ouvre en deux.
-    const hingeLeft = n === 2 ? [true, false] : [str(config, 'sens') === 'gauche']
+    // Vantail unique, pivote du côté choisi
+    const left = str(config, 'sens') === 'gauche'
+    const hingeX = left ? -w / 2 : w / 2
+    const dir = left ? 1 : -1 // sens dans lequel le vantail s'étend depuis ses charnières
 
-    hingeLeft.forEach((left, i) => {
-      const hingeX = left ? -w / 2 + leafW * i : -w / 2 + leafW * (i + 1)
-      const dir = left ? 1 : -1 // sens dans lequel le vantail s'étend depuis ses charnières
+    b.pivot(hingeX, 0, 0, left ? -OPEN : OPEN, () => {
+      const cx = (dir * w) / 2
+      b.box(w - 0.008, h - 0.008, LEAF, cx, h / 2, 0)
 
-      b.pivot(hingeX, 0, 0, left ? -OPEN : OPEN, () => {
-        const cx = (dir * leafW) / 2
-        b.box(leafW - 0.008, h - 0.008, LEAF, cx, h / 2, 0)
+      // Panneau rapporté sur la face avant
+      const margin = 0.1
+      b.box(w - 0.2, h - margin * 2, 0.012, cx, h / 2, LEAF / 2 + 0.006)
 
-        // Panneaux rapportés sur la face avant
-        if (p > 0) {
-          const margin = 0.1
-          const panelH = (h - margin * (p + 1)) / p
-          for (let j = 0; j < p; j++) {
-            b.box(
-              leafW - 0.2,
-              panelH,
-              0.012,
-              cx,
-              margin * (j + 1) + panelH * (j + 0.5),
-              LEAF / 2 + 0.006,
-            )
-          }
-        }
-
-        // Béquille côté ouvrant
-        b.box(0.03, 0.14, 0.06, cx + dir * (leafW / 2 - 0.07), h * 0.48, LEAF / 2 + 0.03, metal)
-      })
+      // Béquille côté ouvrant
+      b.box(0.03, 0.14, 0.06, cx + dir * (w / 2 - 0.07), h * 0.48, LEAF / 2 + 0.03, metal)
     })
 
     return b.center()
   },
 
-  // TARIFS PROVISOIRES — à caler avec le client
+  // Prix de référence (à peindre) — repris par priceOverride pour chaque matériau.
   price(config) {
-    const surface = m2(num(config, 'largeur'), num(config, 'hauteur'))
-    const n = num(config, 'vantaux')
-    return surface * 460 + num(config, 'panneaux') * n * 55 + n * 180
+    const [lo, hi] = DOOR_PRICE.apeindre ?? [0, 0]
+    return interpole(num(config, 'embrasement'), lo, hi)
   },
+
+  priceOverride(config, materiau) {
+    const [lo, hi] = DOOR_PRICE[materiau] ?? [0, 0]
+    return interpole(num(config, 'embrasement'), lo, hi)
+  },
+}
+
+function interpole(embrasement: number, lo: number, hi: number): number {
+  const t = (embrasement - EMBRASEMENT_MIN) / (EMBRASEMENT_MAX - EMBRASEMENT_MIN)
+  return lo + (hi - lo) * Math.min(1, Math.max(0, t))
 }

@@ -13,7 +13,7 @@ import type {
   ToggleParam,
 } from '@/types'
 import { MATERIALS, MATERIAUX_BOIS, OPTIONS } from '@/lib/constants'
-import { FURNITURE, FURNITURE_KEYS, initialConfigs } from '@/lib/furniture'
+import { FURNITURE, FURNITURE_KEYS, SUBTYPES, initialConfigs } from '@/lib/furniture'
 import { calcPrix, formatPrice } from '@/lib/pricing'
 import { SCHEMATICS } from './Schematics'
 import { useDevis } from './DevisProvider'
@@ -26,6 +26,10 @@ import { resumeDevis } from '@/lib/devis'
  */
 const materiauxDe = (type: FurnitureKey): MaterialKey[] =>
   FURNITURE[type].materials ?? MATERIAUX_BOIS
+
+/** Le groupe de sous-rubriques auquel appartient ce type, s'il en a un. */
+const subgroupeDe = (type: FurnitureKey): FurnitureKey[] | undefined =>
+  Object.values(SUBTYPES).find((group) => group.includes(type))
 
 /**
  * Place la caméra pour que le plus grand meuble possible du type courant tienne
@@ -54,11 +58,16 @@ export default function Configurator() {
   const [store, setStore] = useState<Record<FurnitureKey, FurnitureConfig>>(initialConfigs)
   // Le matériau suit le meuble : chaque famille a sa gamme de finitions.
   const [materiau, setMateriau] = useState<MaterialKey>(() => materiauxDe('placard')[0])
+  // Bardage a deux sous-rubriques de prix (parement / isolation), affichées comme
+  // les sous-rubriques de Portes — un onglet à la fois, pas empilées.
+  const [bardageTab, setBardageTab] = useState<'bardage' | 'isolation'>('bardage')
 
   const { deposerBrouillon } = useDevis()
 
   const meuble = FURNITURE[type]
   const config = store[type]
+  const subgroupe = subgroupeDe(type)
+  const isBardage = type === 'bardage'
 
   const mountRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene>()
@@ -275,7 +284,7 @@ export default function Configurator() {
           </div>
         </div>
         <p className="text-muted text-xs mt-2">
-          Neuf familles au catalogue — faites défiler pour toutes les voir. Votre
+          Huit familles au catalogue — faites défiler pour toutes les voir. Votre
           projet n&apos;y figure pas&nbsp;? Choisissez «&nbsp;Autre projet&nbsp;».
         </p>
 
@@ -297,6 +306,30 @@ export default function Configurator() {
               <div className="flex items-baseline justify-between mb-1">
                 <h3 className="font-playfair text-charcoal text-xl">{meuble.label}</h3>
               </div>
+
+              {/* Sous-rubriques — ex. Portes / Porte coulissante */}
+              {subgroupe && (
+                <div className="flex gap-2 mb-3">
+                  {subgroupe.map((key) => {
+                    const active = key === type
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setType(key)}
+                        aria-pressed={active}
+                        className={`text-xs px-3 py-1.5 rounded-sm border transition-colors ${
+                          active
+                            ? 'border-brand bg-white text-charcoal'
+                            : 'border-brand/20 text-muted hover:border-brand/50'
+                        }`}
+                      >
+                        {FURNITURE[key].label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
               <p className="text-muted text-sm leading-relaxed mb-5">{meuble.tagline}</p>
 
               <div className="flex flex-col gap-5">
@@ -311,45 +344,83 @@ export default function Configurator() {
               </div>
             </div>
 
-            {/* Matériaux */}
-            <div>
-              <div className="text-charcoal text-xs uppercase tracking-widest mb-3">
-                Matériau
-              </div>
-              <div
-                className={`grid grid-cols-2 gap-3 ${
-                  materiaux.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
-                }`}
-              >
-                {materiaux.map((key) => {
-                  const m = MATERIALS[key]
-                  const active = materiau === key
+            {/* Sous-rubriques du bardage — mêmes pastilles que Portes / Porte coulissante */}
+            {isBardage && (
+              <div className="flex gap-2 -mb-2">
+                {(
+                  [
+                    { key: 'bardage', label: '1. Pare-pluie, lattage, contre-lattage et bardage' },
+                    { key: 'isolation', label: '2. Isolation' },
+                  ] as const
+                ).map((tab) => {
+                  const active = bardageTab === tab.key
                   return (
                     <button
-                      key={key}
-                      onClick={() => setMateriau(key)}
+                      key={tab.key}
+                      onClick={() => setBardageTab(tab.key)}
                       aria-pressed={active}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-sm border transition-colors ${
-                        active ? 'border-brand bg-white' : 'border-brand/20 hover:border-brand/50'
+                      className={`text-xs px-3 py-1.5 rounded-sm border transition-colors ${
+                        active
+                          ? 'border-brand bg-white text-charcoal'
+                          : 'border-brand/20 text-muted hover:border-brand/50'
                       }`}
                     >
-                      <span
-                        className="w-8 h-8 rounded-full border border-black/10"
-                        style={{ backgroundColor: m.hex }}
-                      />
-                      <span className="text-charcoal text-[0.7rem] text-center leading-tight">
-                        {m.name}
-                      </span>
-                      {m.note && (
-                        <span className="text-muted text-[0.62rem] text-center leading-tight">
-                          {m.note}
-                        </span>
-                      )}
+                      {tab.label}
                     </button>
                   )
                 })}
               </div>
-            </div>
+            )}
+
+            {/* Matériaux */}
+            {(!isBardage || bardageTab === 'bardage') && (
+              <div>
+                <div className="text-charcoal text-xs uppercase tracking-widest mb-3">Matériau</div>
+                <div
+                  className={`grid grid-cols-2 gap-3 ${
+                    materiaux.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'
+                  }`}
+                >
+                  {materiaux.map((key) => {
+                    const m = MATERIALS[key]
+                    const active = materiau === key
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setMateriau(key)}
+                        aria-pressed={active}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-sm border transition-colors ${
+                          active ? 'border-brand bg-white' : 'border-brand/20 hover:border-brand/50'
+                        }`}
+                      >
+                        <span
+                          className="w-8 h-8 rounded-full border border-black/10"
+                          style={{ backgroundColor: m.hex }}
+                        />
+                        <span className="text-charcoal text-[0.7rem] text-center leading-tight">
+                          {m.name}
+                        </span>
+                        {m.note && (
+                          <span className="text-muted text-[0.62rem] text-center leading-tight">
+                            {m.note}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Isolation — rubrique propre au bardage, prix fixe indépendant du matériau */}
+            {isBardage && bardageTab === 'isolation' && meuble.optionsOverride && (
+              <div className="flex items-center justify-between gap-3 p-3 rounded-sm border border-brand/20 bg-white/40">
+                <span className="text-charcoal text-sm">PU 12 cm — toujours incluse</span>
+                <span className="text-muted text-xs">
+                  {formatPrice(meuble.optionsOverride({ ...config, surface: 1 }), ' €/m² HTVA')}
+                </span>
+              </div>
+            )}
 
             {/* Options — seulement celles qui concernent ce meuble */}
             {options.length > 0 && (
@@ -387,16 +458,16 @@ export default function Configurator() {
             {/* Prix */}
             <div className="bg-charcoal rounded-sm p-6 text-white">
               <div className="flex flex-col gap-2 text-sm">
-                <Row label="Meuble" value={formatPrice(prix.pMeuble)} />
-                <Row label="Options" value={formatPrice(prix.pOptions)} />
+                <Row label={meuble.priceLabels?.meuble ?? 'Meuble'} value={formatPrice(prix.pMeuble, meuble.priceUnit)} />
+                <Row label={meuble.priceLabels?.options ?? 'Options'} value={formatPrice(prix.pOptions, meuble.priceUnit)} />
               </div>
               <div className="h-px bg-white/15 my-4" />
               <div className="flex items-end justify-between">
                 <span className="text-white/60 text-xs uppercase tracking-widest">
-                  Estimation totale
+                  {meuble.priceLabels?.total ?? 'Estimation totale'}
                 </span>
                 <span className="font-playfair text-brand text-3xl">
-                  {formatPrice(prix.total)}
+                  {formatPrice(prix.total, meuble.priceUnit)}
                 </span>
               </div>
               <a
@@ -428,12 +499,46 @@ function ParamRow({
   onChange: (v: ParamValue) => void
 }) {
   if (param.kind === 'number') {
-    return <SliderRow param={param} value={Number(value)} onChange={onChange} />
+    return param.control === 'input' ? (
+      <InputRow param={param} value={Number(value)} onChange={onChange} />
+    ) : (
+      <SliderRow param={param} value={Number(value)} onChange={onChange} />
+    )
   }
   if (param.kind === 'choice') {
     return <ChoiceRow param={param} value={String(value)} onChange={onChange} />
   }
   return <ToggleRow param={param} value={Boolean(value)} onChange={onChange} />
+}
+
+/** Une mesure que le client tape plutôt qu'il ne cadre au curseur — une surface, par exemple. */
+function InputRow({
+  param,
+  value,
+  onChange,
+}: {
+  param: NumberParam
+  value: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <div>
+      <div className="text-charcoal text-xs uppercase tracking-widest mb-2">{param.label}</div>
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          className="w-28 border border-brand/20 rounded-sm px-3 py-2 text-sm text-charcoal bg-white focus:outline-none focus:border-brand"
+          min={param.min}
+          max={param.max}
+          step={param.step}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+        />
+        <span className="text-muted text-sm">{param.unit ?? ' cm'}</span>
+      </div>
+      {param.hint && <p className="text-muted text-[0.7rem] mt-1.5">{param.hint}</p>}
+    </div>
+  )
 }
 
 function SliderRow({

@@ -1,5 +1,6 @@
 import type { FurnitureType } from '@/types'
 import { Builder, T, cm, num, m2 } from './helpers'
+import { MATERIAUX_PANNEAU } from '../constants'
 
 const LEG = 0.08
 
@@ -11,7 +12,8 @@ export const tv: FurnitureType = {
   key: 'tv',
   label: 'Meuble sous télé',
   tagline: 'Niches ouvertes sur les côtés, tiroirs au centre, meuble sur pieds.',
-  options: ['optLumiere'],
+  options: ['optLumiere', 'optTiroirs'],
+  materials: MATERIAUX_PANNEAU,
   maxDims: { w: 3.2, h: 0.8, d: 0.55 },
   params: [
     { kind: 'number', key: 'longueur', label: 'Longueur', min: 100, max: 320, step: 10, def: 180 },
@@ -79,6 +81,6 @@ export const tv: FurnitureType = {
   // TARIFS PROVISOIRES — à caler avec le client
   price(config) {
     const facade = m2(num(config, 'longueur'), num(config, 'hauteur'))
-    return facade * 520 + num(config, 'niches') * 80 + num(config, 'tiroirs') * 140 + 180
+    return 2 * (facade * 520 + num(config, 'niches') * 80 + num(config, 'tiroirs') * 140 + 180)
   },
 }

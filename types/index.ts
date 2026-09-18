@@ -9,9 +9,18 @@ export type MaterialKey =
   | 'noyer'
   | 'blanc'
   | 'anthracite'
+  | 'hetre'
   | 'melamine'
   | 'stratifie'
   | 'placage'
+  | 'ayous'
+  | 'autoclave'
+  | 'brule'
+  | 'filberteck'
+  | 'apeindre'
+  | 'massif'
+  | 'vitree'
+  | 'cheneHuile'
 
 /** Les neuf familles de meubles proposées à la présélection. */
 export type FurnitureKey =
@@ -27,7 +36,7 @@ export type FurnitureKey =
 
 export type OptionKey = 'optPortes' | 'optMiroir' | 'optLumiere' | 'optTiroirs'
 
-/** Une mesure au curseur. */
+/** Une mesure au curseur, ou saisie directement dans un champ. */
 export interface NumberParam {
   kind: 'number'
   key: string
@@ -37,9 +46,11 @@ export interface NumberParam {
   step: number
   /** Suffixe affiché à côté de la valeur. ' cm' par défaut, '' pour un décompte. */
   unit?: string
-  /** Précision affichée en petit sous le curseur — une règle de tarif, une contrainte. */
+  /** Précision affichée en petit sous le contrôle — une règle de tarif, une contrainte. */
   hint?: string
   def: number
+  /** 'slider' par défaut. 'input' pour une valeur que le client tape plutôt qu'il ne cadre — une surface, par exemple. */
+  control?: 'slider' | 'input'
 }
 
 /** Un choix parmi quelques valeurs, rendu en boutons segmentés. */
@@ -81,6 +92,22 @@ export interface FurnitureType {
   build(config: FurnitureConfig, color: number): THREE.Group
   /** Base HT, avant multiplicateur d'essence et options. */
   price(config: FurnitureConfig): number
+  /**
+   * Remplace `price(config) × mult(essence)` quand le tarif ne suit pas ce
+   * schéma — un matériau qui fixe un prix au m² plutôt qu'un multiplicateur
+   * (bardage), ou un prix par palier qui ne dépend pas de l'essence (portes).
+   */
+  priceOverride?(config: FurnitureConfig, materiau: MaterialKey): number
+  /**
+   * Remplace la somme des options cochées quand le second poste du devis
+   * n'est pas une liste d'options togglables — l'isolation du bardage, comptée
+   * au m² et toujours incluse.
+   */
+  optionsOverride?(config: FurnitureConfig): number
+  /** Intitulés des deux lignes de la ventilation de prix, et de la ligne de total. « Meuble » / « Options » / « Estimation totale » par défaut. */
+  priceLabels?: { meuble: string; options: string; total?: string }
+  /** Suffixe affiché après chaque prix. ' €' par défaut, ' €/m²' pour un tarif non multiplié par une surface saisie. */
+  priceUnit?: string
 }
 
 export interface MaterialInfo {

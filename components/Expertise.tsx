@@ -43,8 +43,8 @@ const CARDS = [
 // Valeurs numériques plutôt que texte : les chiffres grimpent jusqu'à leur
 // total quand la section entre dans l'écran, comme sur le site de référence.
 const STATS = [
-  { value: 35, suffix: '+', label: "Années d'expérience" },
-  { value: 1200, suffix: '+', label: 'Projets réalisés' },
+  { value: 9, suffix: '+', label: "Années d'expérience" },
+  { value: 300, suffix: '+', label: 'Projets réalisés' },
   { value: 100, suffix: '%', label: 'Sur mesure' },
 ]
 
@@ -63,13 +63,13 @@ export default function Expertise() {
           {...revealed(1, 'left', { fontSize: 'clamp(2rem, 4vw, 3rem)' })}
           className="font-playfair text-charcoal font-normal leading-tight mb-4"
         >
-          Menuiserie d&apos;exception,<br />artisanat authentique
+          Menuiserie qui répond<br />à vos attentes
         </h2>
         <p
           {...revealed(2, 'left')}
           className="text-muted text-base font-light leading-relaxed max-w-sm mt-4"
         >
-          Chaque réalisation est le fruit d&apos;un savoir-faire transmis de génération en génération,
+          Chaque réalisation est le fruit d&apos;un savoir-faire,
           alliant techniques traditionnelles et outils contemporains.
         </p>
 

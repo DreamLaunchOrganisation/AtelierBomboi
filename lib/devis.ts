@@ -37,6 +37,8 @@ export function resumeDevis(
 ): string {
   const meuble = FURNITURE[type]
   const prix = calcPrix(type, config, materiau)
+  const labels = meuble.priceLabels ?? { meuble: 'Meuble', options: 'Options', total: 'Estimation totale' }
+  const unit = meuble.priceUnit
 
   const lignes = [
     `Demande de devis — ${meuble.label}`,
@@ -52,15 +54,17 @@ export function resumeDevis(
   if (optionsRetenues.length > 0) {
     lignes.push(
       '',
-      'Options',
+      labels.options,
       ...optionsRetenues.map((o) => `· ${o.label} (+${o.price} €)`),
     )
+  } else if (meuble.optionsOverride) {
+    lignes.push('', `${labels.options} : ${formatPrice(prix.pOptions, unit)}`)
   }
 
   lignes.push(
     '',
-    `Estimation du configurateur : ${formatPrice(prix.total)}`,
-    `Meuble ${formatPrice(prix.pMeuble)} · Options ${formatPrice(prix.pOptions)}`,
+    `${labels.total ?? 'Estimation totale'} : ${formatPrice(prix.total, unit)}`,
+    `${labels.meuble} ${formatPrice(prix.pMeuble, unit)} · ${labels.options} ${formatPrice(prix.pOptions, unit)}`,
     '',
     'Estimation obtenue en ligne, à confirmer après visite technique.',
   )
