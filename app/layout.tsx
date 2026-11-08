@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import KonamiForest from '@/components/KonamiForest'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 /**
  * Les polices, servies depuis notre propre domaine.
@@ -122,6 +124,12 @@ export default function RootLayout({
 
         {children}
         <KonamiForest />
+
+        {/* Mesure des Core Web Vitals et des pages vues. Les deux ne
+            rapportent qu'en production, et seulement si Speed Insights et Web
+            Analytics sont activés sur le projet Vercel. */}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
