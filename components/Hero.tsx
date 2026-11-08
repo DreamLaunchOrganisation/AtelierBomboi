@@ -50,13 +50,13 @@ export default function Hero() {
 
         <div {...revealed(3)} className="flex flex-col sm:flex-row gap-3">
           <a
-            href="#configurateur"
+            href="/#configurateur"
             className="bg-brand text-white text-sm font-medium px-8 py-3.5 rounded-sm hover:bg-brand-dark transition-colors text-center"
           >
             Configurer mon meuble
           </a>
           <a
-            href="#realisations"
+            href="/#realisations"
             className="border border-white/25 text-white/70 text-sm px-8 py-3.5 rounded-sm hover:border-brand hover:text-brand transition-colors text-center"
           >
             Voir les réalisations

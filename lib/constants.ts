@@ -1,4 +1,5 @@
 import type { MaterialInfo, GalleryItem, MaterialKey, OptionKey } from '@/types'
+import { BUSINESS } from './seo'
 
 /**
  * Les finitions et leur incidence sur le prix.
@@ -489,9 +490,21 @@ export const PROCESS_STEPS = [
   },
 ]
 
+/**
+ * Les coordonnées affichées dans la section contact.
+ *
+ * Les valeurs sont dérivées de `BUSINESS` plutôt que recopiées : ce sont les
+ * mêmes que celles déclarées à Google dans les données structurées, et un
+ * numéro qui diverge entre l'écran et le JSON-LD est une incohérence relevée
+ * par les moteurs. Un seul endroit à corriger si l'atelier déménage.
+ */
 export const CONTACT_DETAILS = [
-  { icon: '📍', label: 'Atelier',   value: 'Zoning industriel, Jumet 6040' },
-  { icon: '📞', label: 'Téléphone', value: '+32 496 98 93 60' },
-  { icon: '✉',  label: 'Email',     value: 'marcobomboi05@gmail.com' },
-  { icon: '🕐', label: 'Horaires',  value: 'Lun–Sam 7h–17h' },
+  {
+    icon: '📍',
+    label: 'Atelier',
+    value: `${BUSINESS.street}, ${BUSINESS.locality} ${BUSINESS.postalCode}`,
+  },
+  { icon: '📞', label: 'Téléphone', value: BUSINESS.phoneDisplay },
+  { icon: '✉',  label: 'Email',     value: BUSINESS.email },
+  { icon: '🕐', label: 'Horaires',  value: BUSINESS.hoursDisplay },
 ]

@@ -5,10 +5,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 const NAV_LINKS = [
-  { href: '#savoir-faire', label: 'Savoir-faire' },
-  { href: '#realisations', label: 'Réalisations' },
-  { href: '#configurateur', label: 'Configurateur' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/#savoir-faire', label: 'Savoir-faire' },
+  { href: '/#realisations', label: 'Réalisations' },
+  { href: '/#configurateur', label: 'Configurateur' },
+  { href: '/#contact', label: 'Contact' },
 ]
 
 // Glyphes officiels des marques : gris au repos, couleur de la marque au
@@ -102,7 +102,7 @@ export default function Nav() {
       <SocialGradients />
 
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 py-5 bg-cream/90 backdrop-blur-md border-b border-brand/20 transition-all">
-        <Link href="#" className="flex items-center">
+        <Link href="/" className="flex items-center">
           <Image
             src="/logo-bomboi.png"
             alt="L'atelier Bomboi — Menuiserie"
@@ -131,7 +131,7 @@ export default function Nav() {
         <div className="hidden nav:flex items-center gap-5">
           <SocialLinks />
           <a
-            href="#configurateur"
+            href="/#configurateur"
             className="bg-charcoal text-white text-sm font-medium px-6 py-2.5 rounded-sm hover:bg-brand transition-colors"
           >
             Obtenir un devis
@@ -167,7 +167,7 @@ export default function Nav() {
           </a>
         ))}
         <a
-          href="#configurateur"
+          href="/#configurateur"
           onClick={closeMenu}
           className="mt-4 bg-charcoal text-white text-base font-medium px-10 py-3.5 rounded-sm hover:bg-brand transition-colors"
         >

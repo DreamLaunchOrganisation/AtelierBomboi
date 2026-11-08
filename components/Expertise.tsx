@@ -1,10 +1,27 @@
+import type { ReactNode } from 'react'
+import Link from 'next/link'
 import Counter from './Counter'
 import { revealed } from '@/lib/reveal'
 
-const CARDS = [
+/**
+ * Les quatre domaines de l'atelier.
+ *
+ * `href` est facultatif, et c'est volontaire : il n'est posé que là où une page
+ * service dit vraiment la même chose que la carte. « Bibliothèques & Bureaux »
+ * n'a pas de page dédiée, et la renvoyer vers les dressings pour avoir un lien
+ * partout tromperait le visiteur autant que le moteur. Les cartes liées
+ * affichent « En savoir plus », les autres non : la différence se voit.
+ */
+const CARDS: {
+  title: string
+  desc: string
+  icon: ReactNode
+  href?: string
+}[] = [
   {
     title: 'Dressings & Placards',
     desc: 'Optimisez chaque centimètre de votre espace de rangement avec élégance.',
+    href: '/dressing-sur-mesure',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 text-brand mb-5">
         <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="10" rx="1"/><rect x="14" y="17" width="7" height="4" rx="1"/>
@@ -14,6 +31,7 @@ const CARDS = [
   {
     title: 'Cuisines & Salles de bain',
     desc: 'Des intérieurs fonctionnels et raffinés, pensés pour votre quotidien.',
+    href: '/cuisine-sur-mesure',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 text-brand mb-5">
         <rect x="2" y="7" width="20" height="13" rx="1"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M12 12v3"/>
@@ -32,6 +50,7 @@ const CARDS = [
   {
     title: 'Agencements sur mesure',
     desc: 'Escaliers, habillages muraux, menuiseries intérieures — chaque détail compte.',
+    href: '/escalier-sur-mesure',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 text-brand mb-5">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -87,20 +106,51 @@ export default function Expertise() {
 
       {/* Grille de cartes droite */}
       <div className="grid grid-cols-2 border-t md:border-t-0 md:border-l border-brand/20">
-        {CARDS.map((card, i) => (
-          <div
-            key={card.title}
-            {...revealed(2 + i, 'zoom')}
-            className={`p-8 md:p-10 hover:bg-cream transition-colors
-              ${i % 2 === 0 ? 'border-r border-brand/20' : ''}
-              ${i < 2 ? 'border-b border-brand/20' : ''}
-            `}
-          >
-            {card.icon}
-            <h3 className="font-playfair text-lg font-normal mb-2">{card.title}</h3>
-            <p className="text-muted text-sm leading-relaxed">{card.desc}</p>
-          </div>
-        ))}
+        {CARDS.map((card, i) => {
+          // Les bordures dessinent la grille interne : colonne de gauche à
+          // droite, première rangée en bas. Identiques que la carte soit un
+          // lien ou non, pour que rien ne bouge visuellement.
+          const bordures = `
+            ${i % 2 === 0 ? 'border-r border-brand/20' : ''}
+            ${i < 2 ? 'border-b border-brand/20' : ''}
+          `
+
+          const contenu = (
+            <>
+              {card.icon}
+              <h3 className="font-playfair text-lg font-normal mb-2 group-hover:text-brand transition-colors">
+                {card.title}
+              </h3>
+              <p className="text-muted text-sm leading-relaxed">{card.desc}</p>
+            </>
+          )
+
+          if (!card.href) {
+            return (
+              <div
+                key={card.title}
+                {...revealed(2 + i, 'zoom')}
+                className={`p-8 md:p-10 hover:bg-cream transition-colors ${bordures}`}
+              >
+                {contenu}
+              </div>
+            )
+          }
+
+          return (
+            <Link
+              key={card.title}
+              {...revealed(2 + i, 'zoom')}
+              href={card.href}
+              className={`group block p-8 md:p-10 hover:bg-cream transition-colors ${bordures}`}
+            >
+              {contenu}
+              <span className="inline-block mt-4 text-brand text-xs tracking-widest uppercase">
+                En savoir plus →
+              </span>
+            </Link>
+          )
+        })}
       </div>
     </section>
   )
